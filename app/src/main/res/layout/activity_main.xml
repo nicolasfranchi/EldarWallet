@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:layout_width="64dp"
+                android:layout_height="match_parent"
+                android:background="#00ffffff"
+                android:src="@drawable/ic_account" />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="start|center"
+                android:textColor="@color/eldar_black"
+                tools:text="Hi, Nicolás!" />
+
+            <ImageButton
+                android:id="@+id/btnLogOut"
+                android:layout_width="64dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_logout" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#eeeeee" />
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/balance_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/balance" />
+
+            <TextView
+                android:id="@+id/tvBalance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/balance_text"
+                android:textSize="36sp"
+                tools:text="$386.764,00" />
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#eeeeee" />
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/cards_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                tools:ignore="RtlSymmetry">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:text="@string/your_credit_cards" />
+
+                <ImageButton
+                    android:id="@+id/btnAddCreditcard"
+                    android:layout_width="64dp"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackground"
+                    android:src="@drawable/ic_add_card" />
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCreditCards"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_below="@id/cards_toolbar"
+            android:layout_weight="1" />
+
+
+        <LinearLayout
+            android:baselineAligned="false"
+            android:elevation="4dp"
+            android:background="@color/eldar_blue"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/btnPayWithQR"
+                android:background="@drawable/gradient"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_camscanner"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"/>
+
+                <TextView
+                    android:textColor="@color/white"
+                    android:textAlignment="center"
+                    android:text="Pay with QR code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnPayWithCard"
+                android:background="@drawable/gradient"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_credit_card"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"/>
+
+                <TextView
+                    android:textColor="@color/white"
+                    android:textAlignment="center"
+                    android:text="Pay with credit card"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>

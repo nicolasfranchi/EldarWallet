@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">EldarWallet</string>
+    <string name="create_account">Create your new account</string>
+    <string name="balance">Balance</string>
+    <string name="your_credit_cards">Your credit cards</string>
+    <string name="cvv_label">CVV</string>
+    <string name="exp_label">EXP</string>
+    <string name="first_name_hint">First name</string>
+    <string name="last_name_hint">Last name</string>
+    <string name="card_issuer_hint">Card issuer</string>
+    <string name="card_number_hint">Card number</string>
+    <string name="expiry_date_hint">Expiration date</string>
+    <string name="cvv_hint">CVV</string>
+    <string name="save_button_label">Add credit card</string>
+</resources>
