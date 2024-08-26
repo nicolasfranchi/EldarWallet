@@ -10,7 +10,7 @@
         android:fitsSystemWindows="true"
         android:gravity="center"
         android:orientation="vertical"
-        tools:context=".view.QRCodeActivity">
+        tools:context=".view.QrActivity">
 
         <LinearLayout
             android:layout_width="match_parent"

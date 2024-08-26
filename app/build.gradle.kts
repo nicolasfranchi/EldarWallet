@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    kotlin("kapt") // Añadir esto para habilitar KAPT
+    kotlin("kapt")
+    alias(libs.plugins.google.gms.google.services) // Añadir esto para habilitar KAPT
 }
 
 android {
@@ -47,6 +48,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.room:room-runtime:2.6.1")
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("org.mindrot:jbcrypt:0.4")

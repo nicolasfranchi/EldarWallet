@@ -1,37 +1,31 @@
 package com.inc.eldartest.view
 
-import QRCodeViewModel
+import com.inc.eldartest.viewmodel.QrViewModel
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.inc.eldartest.R
 import com.inc.eldartest.databinding.ActivityQrcodeBinding
-import com.inc.eldartest.data.QRCodeRepository
-import com.inc.eldartest.util.RetrofitClient
-import com.inc.eldartest.viewmodel.QRCodeViewModelFactory
+import com.inc.eldartest.util.Constants
 
-class QRCodeActivity : AppCompatActivity() {
+class QrActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityQrcodeBinding
-    private val qrCodeViewModel: QRCodeViewModel by viewModels {
-        QRCodeViewModelFactory(QRCodeRepository(RetrofitClient.qrCodeApi))
-    }
+    private val viewModel = QrViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityQrcodeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val name = intent.getStringExtra(Constants.KEY_NAME)
+        val lastName = intent.getStringExtra(Constants.KEY_LASTNAME)
 
-        val firstName = getSharedPreferences("user_prefs", MODE_PRIVATE).getString("first_name", "")
-        val lastName = getSharedPreferences("user_prefs", MODE_PRIVATE).getString("last_name", "")
+        val text = "${name}-${lastName}"
 
-        val stringCode = "$firstName$lastName"
-
-        qrCodeViewModel.generateQRCode(stringCode).observe(this) { imageData ->
+        viewModel.generateQRCode(text).observe(this) { imageData ->
             if (imageData != null) {
                 val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
                 binding.ivQrcode.setImageBitmap(bitmap)

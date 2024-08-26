@@ -1,31 +1,40 @@
 package com.inc.eldartest.viewmodel
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.mindrot.jbcrypt.BCrypt
-import com.inc.eldartest.model.User
+import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseUser
+import com.inc.eldartest.data.AuthRepository
 import com.inc.eldartest.data.UserRepository
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
+class LoginViewModel : ViewModel() {
 
-    private val userRepository = UserRepository(application)
-    val loginResult = MutableLiveData<User?>()  // Cambio para pasar el usuario cuando el inicio es exitoso
+    private val authRepository = AuthRepository()
+    private val userRepository = UserRepository()
 
-    fun loginUser(username: String, password: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val user = userRepository.getUser(username)
-            if (user != null && BCrypt.checkpw(password, user.password)) {
-                loginResult.postValue(user)
-            } else {
-                loginResult.postValue(null)
-            }
+    val loginResult: MutableLiveData<Result<FirebaseUser>> = MutableLiveData()
+    val registrationResult: MutableLiveData<Result<FirebaseUser>> = MutableLiveData()
+    private val userSaveResult: MutableLiveData<Boolean> = MutableLiveData()
+
+    fun login(email: String, password: String) {
+        authRepository.login(email, password).observeForever {
+            loginResult.value = it
         }
     }
 
-    private fun checkPassword(password: String, hashedPassword: String): Boolean {
-        return BCrypt.checkpw(password, hashedPassword)
+    fun register(email: String, password: String, firstName: String, lastName: String) {
+        authRepository.register(email, password).observeForever {
+            if (it.isSuccess) {
+                val user: FirebaseUser = it.getOrNull()!!
+                saveUserDetails(user.uid, user.email!!,firstName, lastName)
+            }
+            registrationResult.value = it
+        }
+
+    }
+
+    private fun saveUserDetails(userId: String, email: String, firstName: String, lastName: String) {
+        userRepository.saveUserDetails(userId, email, firstName, lastName) { success ->
+            userSaveResult.value = success
+        }
     }
 }

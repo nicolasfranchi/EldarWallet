@@ -18,16 +18,13 @@
         android:theme="@style/Theme.EldarTest"
         tools:targetApi="31">
         <activity
+            android:name=".view.LoginActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.PayActivity"
             android:exported="false" />
         <activity
-            android:name=".view.QRCodeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.CreateAccountActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.LoginActivity"
+            android:name=".view.QrActivity"
             android:exported="false" />
         <activity
             android:name=".view.MainActivity"

@@ -5,54 +5,81 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.inc.eldartest.R
-import com.inc.eldartest.model.User
 import com.inc.eldartest.viewmodel.LoginViewModel
 
 class LoginActivity : AppCompatActivity() {
 
-    private val loginViewModel: LoginViewModel by viewModels()
+    private val viewModel = LoginViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        val etUsername = findViewById<EditText>(R.id.etUsername)
-        val etPassword = findViewById<EditText>(R.id.etPassword)
-        val btnLogin = findViewById<Button>(R.id.btnLogin)
-        val btnCreateAccount = findViewById<Button>(R.id.btnCreateAccount)
-
-        btnLogin.setOnClickListener {
-            val username = etUsername.text.toString()
-            val password = etPassword.text.toString()
-            loginViewModel.loginUser(username, password)
-        }
-
-        loginViewModel.loginResult.observe(this, Observer { user ->
-            if (user != null) {
-                saveUserData(user)
+        viewModel.loginResult.observe(this, Observer { result ->
+            result.onSuccess { user ->
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
-            } else {
-                Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
+            }.onFailure { exception ->
+                Toast.makeText(this, exception.message.toString(), Toast.LENGTH_SHORT).show()
             }
         })
 
-        btnCreateAccount.setOnClickListener {
-            startActivity(Intent(this, CreateAccountActivity::class.java))
-        }
-    }
+        viewModel.registrationResult.observe(this, Observer { result ->
+            result.onSuccess { user ->
+                Toast.makeText(this, "User successfully registered!", Toast.LENGTH_SHORT).show()
+            }.onFailure { exception ->
+                Toast.makeText(this, exception.message.toString(), Toast.LENGTH_SHORT).show()
+            }
+        })
 
-    private fun saveUserData(user: User) {
-        val editor = getSharedPreferences("user_prefs", MODE_PRIVATE).edit()
-        editor.putString("username", user.username)
-        editor.putString("first_name", user.firstName)
-        editor.putString("last_name", user.lastName)
-        editor.putFloat("balance", user.balance.toFloat())
-        editor.putInt("userId", user.userId)
-        editor.apply()
+        findViewById<Button>(R.id.btnLogin).setOnClickListener {
+            val etEmail = findViewById<EditText>(R.id.etEmail)
+            val etPassword = findViewById<EditText>(R.id.etPassword)
+
+            val email = etEmail.text.toString()
+            val password = etPassword.text.toString()
+
+            if (email.isNotEmpty() && password.isNotEmpty()
+            ) {
+                viewModel.login(email, password)
+            }
+        }
+
+        findViewById<Button>(R.id.btnSignIn).setOnClickListener {
+            val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_register_user, null)
+            val bottomSheetDialog = BottomSheetDialog(this)
+            bottomSheetDialog.setContentView(bottomSheetView)
+
+            bottomSheetView.findViewById<Button>(R.id.btnCreateAccount).setOnClickListener {
+                val email = bottomSheetView.findViewById<EditText>(R.id.etEmail).text.toString()
+                val password =
+                    bottomSheetView.findViewById<EditText>(R.id.etPassword).text.toString()
+                val firstName =
+                    bottomSheetView.findViewById<EditText>(R.id.etFirstName).text.toString()
+                val lastName =
+                    bottomSheetView.findViewById<EditText>(R.id.etLastName).text.toString()
+
+                if (email.isNotEmpty() &&
+                    password.isNotEmpty() &&
+                    firstName.isNotEmpty() &&
+                    lastName.isNotEmpty()
+                ) {
+                    viewModel.register(
+                        email,
+                        password,
+                        firstName.replace(" ", ""),
+                        lastName.replace(" ", "")
+                    )
+                    bottomSheetDialog.dismiss()
+                }
+
+
+            }
+            bottomSheetDialog.show()
+        }
     }
 }

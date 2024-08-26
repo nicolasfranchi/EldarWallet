@@ -17,31 +17,38 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.auth.FirebaseUser
 import com.inc.eldartest.R
-import com.inc.eldartest.model.CreditCard
+import com.inc.eldartest.model.Card
 import com.inc.eldartest.databinding.ActivityMainBinding
+import com.inc.eldartest.model.User
+import com.inc.eldartest.util.Constants
 import com.inc.eldartest.viewmodel.MainViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
-    private lateinit var creditCardAdapter: CreditCardAdapter
+    private lateinit var cardAdapter: CardAdapter
 
     private lateinit var addCardActivityResultLauncher: ActivityResultLauncher<Intent>
+    private lateinit var user: FirebaseUser
+    private lateinit var userInfo: User
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
-        if (!isUserLoggedIn()) {
+        if (viewModel.getCurrentUser() == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         } else {
+            user = viewModel.getCurrentUser()!!
             loadUserData()
             setupRecyclerView()
             observeCreditCards()
@@ -49,11 +56,8 @@ class MainActivity : AppCompatActivity() {
 
         setupAddCardActivityResultLauncher()
 
-        findViewById<ImageButton>(R.id.btnLogOut).setOnClickListener{
-            val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-            val editor = sharedPreferences.edit()
-            editor.clear()
-            editor.apply()
+        findViewById<ImageButton>(R.id.btnLogOut).setOnClickListener {
+            viewModel.logOut()
 
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
@@ -64,19 +68,21 @@ class MainActivity : AppCompatActivity() {
             showAddCardBottomSheet()
         }
 
-        findViewById<LinearLayout>(R.id.btnPayWithQR).setOnClickListener{
-            val intent = Intent(this, QRCodeActivity::class.java)
+        findViewById<LinearLayout>(R.id.btnPayWithQR).setOnClickListener {
+            val intent = Intent(this, QrActivity::class.java)
+            intent.putExtra(Constants.KEY_NAME, userInfo.firstName)
+            intent.putExtra(Constants.KEY_LASTNAME, userInfo.lastName)
             startActivity(intent)
         }
 
-        findViewById<LinearLayout>(R.id.btnPayWithCard).setOnClickListener{
+        findViewById<LinearLayout>(R.id.btnPayWithCard).setOnClickListener {
 
         }
     }
 
 
     private fun showAddCardBottomSheet() {
-        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_new_card, null)
+        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_add_card, null)
         val bottomSheetDialog = BottomSheetDialog(this)
         bottomSheetDialog.setContentView(bottomSheetView)
 
@@ -89,10 +95,42 @@ class MainActivity : AppCompatActivity() {
         val btnSaveCard = bottomSheetView.findViewById<Button>(R.id.btnSaveCard)
 
         etCardNumber.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            private var isFormatting = false  // Para evitar bucles de formato
+            private var deletingSpace = false  // Para manejar la eliminación de espacios
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Verifica si el usuario está eliminando un espacio
+                deletingSpace = count > 0 && s?.get(start) == ' '
+            }
+
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
             override fun afterTextChanged(s: Editable?) {
-                tvCardIssuer.text = detectCardIssuer(s.toString())
+                if (isFormatting) return  // Evita bucles infinitos
+
+                isFormatting = true
+
+                s?.let {
+                    val digitsOnly = s.toString().replace(" ", "")
+                    val formattedCardNumber = StringBuilder()
+
+                    for (i in digitsOnly.indices) {
+                        if (i > 0 && (i % 4 == 0) && i < 16) {
+                            formattedCardNumber.append(" ")
+                        }
+                        formattedCardNumber.append(digitsOnly[i])
+                    }
+
+                    // Detectar emisor de la tarjeta según el primer dígito
+                    tvCardIssuer.text = detectCardIssuer(digitsOnly)
+
+                    etCardNumber.removeTextChangedListener(this)
+                    etCardNumber.setText(formattedCardNumber.toString())
+                    etCardNumber.setSelection(formattedCardNumber.length)
+                    etCardNumber.addTextChangedListener(this)
+                }
+
+                isFormatting = false
             }
         })
 
@@ -106,9 +144,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
                 if (isFormatting) return
@@ -119,19 +155,11 @@ class MainActivity : AppCompatActivity() {
                     deletingSlash = false
                 } else {
                     if (s != null && s.length == 2 && !s.contains("/")) {
-                        // Verificar si los dos primeros dígitos son un mes válido
-                        val monthInput = s.toString()
-                        try {
-                            val month = monthInput.toInt()
-                            if (month < 1 || month > 12) {
-                                etExpiryDate.setError("Enter a valid month (01-12)")
-                                //s.clear() // Limpiar el input si el mes no es válido
-                            } else {
-                                s.append('/') // Añadir la barra si el mes es válido
-                            }
-                        } catch (e: NumberFormatException) {
-                            Toast.makeText(etExpiryDate.context, "Invalid month format", Toast.LENGTH_SHORT).show()
-                            s.clear()
+                        val month = s.toString().toIntOrNull()
+                        if (month == null || month !in 1..12) {
+                            etExpiryDate.error = "Enter a valid month (01-12)"
+                        } else {
+                            s.append('/')
                         }
                     }
                 }
@@ -140,40 +168,44 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        fun formatCardNumber(cardNumber: String): String {
-            // Filtrar solo dígitos
-            val digitsOnly = cardNumber.filter { it.isDigit() }
-
-            // Determinar el formato basado en la longitud
-            return if (digitsOnly.length == 16) {
-                // Formato típico de 4 grupos de 4
-                digitsOnly.chunked(4).joinToString(" ")
-            } else {
-                // Formato de 3 grupos de 4 y uno de 5 al final
-                digitsOnly.substring(0, 12).chunked(4).joinToString(" ") + " " + digitsOnly.substring(12)
-            }
-        }
-
-
-
         btnSaveCard.setOnClickListener {
-            val cardNumberFormatted = formatCardNumber(etCardNumber.text.toString())
-            val card = CreditCard(
-                cardIssuer = tvCardIssuer.text.toString(),
-                cardNumber = cardNumberFormatted,
-                expiryDate = etExpiryDate.text.toString(),
-                cvv = etCVV.text.toString(),
-                ownerId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("userId", -1)
-            )
+            val cardNumber = etCardNumber.text.toString().replace(" ", "")  // Guardar sin espacios
+            val inputFirstName = etFirstName.text.toString().trim()
+            val inputLastName = etLastName.text.toString().trim()
+            val cvv = etCVV.text.toString()
 
-            if (!viewModel.verifyUserFirstName(etFirstName.text.toString().replace(" ", ""))
-                || !viewModel.verifyUserLastName(etLastName.text.toString().replace(" ", ""))
-            ) {
-                if (!viewModel.verifyUserFirstName(etFirstName.text.toString()))
-                    etFirstName.setError("Cardholder name doesn't match")
-                if (!viewModel.verifyUserLastName(etLastName.text.toString()))
-                    etLastName.setError("Cardholder name doesn't match")
-            } else {
+            // Validación del número de tarjeta: 16 o 17 dígitos permitidos
+            if (cardNumber.length !in 16..17) {
+                etCardNumber.error = "Card number must be 16 or 17 digits"
+                return@setOnClickListener
+            }
+
+            // Validación del CVV: 3 o 4 dígitos, sin espacios
+            if (!cvv.matches(Regex("\\d{3,4}"))) {
+                etCVV.error = "CVV must be 3 or 4 digits"
+                return@setOnClickListener
+            }
+
+            // Verificar nombres
+            val isFirstNameValid = inputFirstName.equals(userInfo.firstName, ignoreCase = true)
+            val isLastNameValid = inputLastName.equals(userInfo.lastName, ignoreCase = true)
+
+            if (!isFirstNameValid) {
+                etFirstName.error = "Cardholder name doesn't match"
+            }
+            if (!isLastNameValid) {
+                etLastName.error = "Cardholder last name doesn't match"
+            }
+
+            if (isFirstNameValid && isLastNameValid) {
+                val card = Card(
+                    cardIssuer = tvCardIssuer.text.toString(),
+                    cardNumber = cardNumber,  // Guardar sin espacios
+                    expiryDate = etExpiryDate.text.toString(),
+                    cvv = cvv,
+                    ownerId = user.uid
+                )
+
                 viewModel.addCard(card)
                 Toast.makeText(this, "Card saved successfully", Toast.LENGTH_SHORT).show()
                 bottomSheetDialog.dismiss()
@@ -183,19 +215,14 @@ class MainActivity : AppCompatActivity() {
         bottomSheetDialog.show()
     }
 
-    private fun detectCardIssuer(number: String): String {
-        if (number.isEmpty()) {
-            return "";
-        } else {
-            return when (number.first()) {
-                '3' -> "American Express"
-                '4' -> "Visa"
-                '5' -> "Mastercard"
-                else -> "Unknown"
-            }
+    private fun detectCardIssuer(cardNumber: String): String {
+        return when {
+            cardNumber.startsWith("4") -> "Visa"
+            cardNumber.startsWith("5") -> "Mastercard"
+            cardNumber.startsWith("3") -> "American Express"
+            else -> "Unknown"
         }
     }
-
 
     @SuppressLint("NotifyDataSetChanged")
     private fun setupAddCardActivityResultLauncher() {
@@ -203,53 +230,47 @@ class MainActivity : AppCompatActivity() {
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == RESULT_OK) {
-                Log.e("ENTRE AL RESULT LAUNCHER OK", "OK")
-                val userId =
-                    getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("userId", -1)
-                viewModel.loadCreditCards(userId)
+                viewModel.loadCreditCards(user.uid)
             }
         }
     }
 
-    private fun isUserLoggedIn(): Boolean {
-        val id = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("userId", -1)
-        return id != -1
-    }
-
     @SuppressLint("SetTextI18n")
     private fun loadUserData() {
-        val userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("userId", -1)
-        val firstName =
-            getSharedPreferences("user_prefs", MODE_PRIVATE).getString("first_name", "")
-        val balance = getSharedPreferences("user_prefs", MODE_PRIVATE).getFloat("balance", 0f)
 
-        binding.tvName.text = "Hi, $firstName!"
-        binding.tvBalance.text = "$$balance"
+        viewModel.getUserDetails(user.uid)
 
-        viewModel.loadCreditCards(userId)
+        viewModel.userDetails.observe(this, Observer { userDetails ->
+            if (userDetails != null) {
+                userInfo = userDetails
+                binding.tvName.text = "Hi, ${userDetails.firstName}!"
+                binding.tvBalance.text = "${userDetails.balance}"
+            } else {
+                Toast.makeText(this@MainActivity, "Error fetching user data", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        })
+
+        viewModel.loadCreditCards(user.uid)
     }
 
     private fun setupRecyclerView() {
-        creditCardAdapter = CreditCardAdapter(
+        cardAdapter = CardAdapter(
             emptyList(),
-            this,
-            { card -> handleDeleteClick(card) }
-        )
-        binding.rvCreditCards.adapter = creditCardAdapter
+            this
+        ) { card -> handleDeleteClick(card) }
+        binding.rvCreditCards.adapter = cardAdapter
         binding.rvCreditCards.layoutManager = LinearLayoutManager(this)
     }
 
-    private fun handleDeleteClick(card: CreditCard) {
-        val userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("userId", -1)
-        viewModel.deleteCreditCard(card.cardId, userId)
+    private fun handleDeleteClick(card: Card) {
+        viewModel.deleteCreditCard(card.cardId, user.uid)
     }
 
     private fun observeCreditCards() {
-        viewModel.creditCards.observe(this) { cards ->
-            Log.e("TAG", "ENTRE AL OBSERVER")
-            Log.e("CARDS", cards.toString());
+        viewModel.cards.observe(this) { cards ->
             if (cards != null) {
-                creditCardAdapter.updateCreditCards(cards)
+                cardAdapter.updateCards(cards)
             }
         }
     }

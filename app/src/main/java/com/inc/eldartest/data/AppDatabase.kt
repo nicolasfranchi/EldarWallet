@@ -4,13 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.inc.eldartest.model.CreditCard
-import com.inc.eldartest.model.User
+import com.inc.eldartest.model.Card
 
-@Database(entities = [User::class, CreditCard::class], version = 1)
+@Database(entities = [Card::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun userDao(): UserDao
-    abstract fun creditCardDao(): CreditCardDao
+    abstract fun creditCardDao(): CardDao
 
     companion object {
         @Volatile

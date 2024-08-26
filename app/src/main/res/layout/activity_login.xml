@@ -20,11 +20,11 @@
         android:layout_height="wrap_content"/>
 
     <EditText
-        android:id="@+id/etUsername"
+        android:id="@+id/etEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username"
-        android:inputType="text"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
         android:layout_marginBottom="16dp"/>
 
     <EditText
@@ -44,8 +44,8 @@
 
     <Button
         android:backgroundTint="@color/eldar_black"
-        android:id="@+id/btnCreateAccount"
+        android:id="@+id/btnSignIn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create Account"/>
+        android:text="Sign in"/>
 </LinearLayout>

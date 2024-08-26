@@ -6,12 +6,12 @@ import java.util.Base64
 
 object CryptoUtils {
 
-    private val password = "una_contraseña_segura"
+    private const val PASSWORD = "Jk$8fZ!2Qw#LxVb&3RnP"
 
     fun encrypt(data: String): String {
         val cryptor = AES256JNCryptor()
         val encryptedBytes = try {
-            cryptor.encryptData(data.toByteArray(), password.toCharArray())
+            cryptor.encryptData(data.toByteArray(), PASSWORD.toCharArray())
         } catch (e: CryptorException) {
             throw RuntimeException("Error encrypting data", e)
         }
@@ -22,7 +22,7 @@ object CryptoUtils {
         val cryptor = AES256JNCryptor()
         val bytes = Base64.getDecoder().decode(encryptedData)
         val decryptedBytes = try {
-            cryptor.decryptData(bytes, password.toCharArray())
+            cryptor.decryptData(bytes, PASSWORD.toCharArray())
         } catch (e: CryptorException) {
             throw RuntimeException("Error decrypting data", e)
         }

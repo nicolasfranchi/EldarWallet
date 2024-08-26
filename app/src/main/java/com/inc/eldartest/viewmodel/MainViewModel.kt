@@ -4,10 +4,15 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.inc.eldartest.model.CreditCard
-import com.inc.eldartest.data.CreditCardRepository
+import com.google.firebase.auth.FirebaseUser
+import com.inc.eldartest.data.AuthRepository
+import com.inc.eldartest.model.Card
+import com.inc.eldartest.data.CardRepository
+import com.inc.eldartest.data.UserRepository
+import com.inc.eldartest.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -17,39 +22,61 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private const val TAG = "MainViewModel"
     }
 
-    private val creditCardRepository = CreditCardRepository(application)
-    val creditCards = MutableLiveData<List<CreditCard>>()
+    private val cardRepository = CardRepository(application)
+    private val authRepository = AuthRepository()
+    private val userRepository = UserRepository()
+    val cards = MutableLiveData<List<Card>>()
 
-    fun loadCreditCards(userId: Int) {
-        Log.e("MAINVIEWMODEL", "CARGANDO TARJETAS")
-        viewModelScope.launch(Dispatchers.IO) {
-            val cards = creditCardRepository.getCreditCard(userId)
-            Log.i(TAG, cards.toString())
-            creditCards.postValue(cards)
+
+    private val _userDetails = MutableLiveData<User?>()
+    val userDetails: LiveData<User?> get() = _userDetails
+
+    fun getUserDetails(userId: String) {
+        userRepository.getUserDetails(userId) { details ->
+            _userDetails.value = details
         }
     }
 
-    fun deleteCreditCard(cardId: Int, userId: Int) {
+    fun logOut() {
+        authRepository.logout()
+    }
+
+    fun getCurrentUser(): FirebaseUser? {
+        return authRepository.getCurrentUser()
+    }
+
+    fun loadCreditCards(userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            creditCardRepository.deleteCard(cardId)
+            val cards = cardRepository.getCreditCard(userId)
+            this@MainViewModel.cards.postValue(cards)
+        }
+    }
+
+    fun deleteCreditCard(cardId: Int, userId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            cardRepository.deleteCard(cardId)
             loadCreditCards(userId)
         }
     }
 
     fun verifyUserFirstName(firstName: String): Boolean {
-        val savedFirstName = getApplication<Application>().getSharedPreferences("user_prefs", Context.MODE_PRIVATE).getString("first_name", "")
+        val savedFirstName =
+            getApplication<Application>().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                .getString("first_name", "")
         return firstName == savedFirstName
     }
 
     fun verifyUserLastName(lastName: String): Boolean {
-        val savedLastName = getApplication<Application>().getSharedPreferences("user_prefs", Context.MODE_PRIVATE).getString("last_name", "")
-        return  lastName == savedLastName
+        val savedLastName =
+            getApplication<Application>().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                .getString("last_name", "")
+        return lastName == savedLastName
     }
 
-    fun addCard(card: CreditCard) {
+    fun addCard(card: Card) {
         viewModelScope.launch(Dispatchers.IO) {
-            creditCardRepository.saveCard(card)
-            loadCreditCards(card.ownerId)  // Recargar las tarjetas para actualizar la vista.
+            cardRepository.saveCard(card)
+            loadCreditCards(card.ownerId)
         }
     }
 }
