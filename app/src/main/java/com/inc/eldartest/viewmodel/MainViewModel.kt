@@ -1,8 +1,6 @@
 package com.inc.eldartest.viewmodel
 
 import android.app.Application
-import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -18,10 +16,6 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    companion object {
-        private const val TAG = "MainViewModel"
-    }
-
     private val cardRepository = CardRepository(application)
     private val authRepository = AuthRepository()
     private val userRepository = UserRepository()
@@ -30,6 +24,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _userDetails = MutableLiveData<User?>()
     val userDetails: LiveData<User?> get() = _userDetails
+
+    fun deposit(userId: String, amount: Double) {
+        userRepository.deposit(userId, amount) { user ->
+            _userDetails.value = user
+        }
+    }
+
+    fun send(userId: String, email: String, amount: Double) {
+        userRepository.send(userId, email, amount) { user ->
+            _userDetails.value = user
+        }
+    }
 
     fun getUserDetails(userId: String) {
         userRepository.getUserDetails(userId) { details ->
@@ -59,24 +65,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun verifyUserFirstName(firstName: String): Boolean {
-        val savedFirstName =
-            getApplication<Application>().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                .getString("first_name", "")
-        return firstName == savedFirstName
-    }
-
-    fun verifyUserLastName(lastName: String): Boolean {
-        val savedLastName =
-            getApplication<Application>().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                .getString("last_name", "")
-        return lastName == savedLastName
-    }
-
     fun addCard(card: Card) {
         viewModelScope.launch(Dispatchers.IO) {
             cardRepository.saveCard(card)
             loadCreditCards(card.ownerId)
         }
     }
+
+    fun formatBalance(amount: Double): String {
+        return String.format("$%,.2f", amount)
+    }
+
 }

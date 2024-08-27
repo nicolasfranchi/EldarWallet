@@ -31,6 +31,8 @@ class LoginActivity : AppCompatActivity() {
         viewModel.registrationResult.observe(this, Observer { result ->
             result.onSuccess { user ->
                 Toast.makeText(this, "User successfully registered!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
             }.onFailure { exception ->
                 Toast.makeText(this, exception.message.toString(), Toast.LENGTH_SHORT).show()
             }

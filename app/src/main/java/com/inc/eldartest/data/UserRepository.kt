@@ -20,7 +20,7 @@ class UserRepository {
             "email" to email,
             "firstName" to firstName,
             "lastName" to lastName,
-            "balance" to 0.0  // Firestore utiliza Double para números decimales
+            "balance" to 0.0
         )
 
         // Guardar el documento en Firestore
@@ -30,6 +30,68 @@ class UserRepository {
             }
             .addOnFailureListener {
                 callback(false)
+            }
+    }
+
+    fun deposit(userId: String, amount: Double, callback: (User?) -> Unit) {
+        val userRef = usersCollection.document(userId)
+
+        userRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val email = document.getString("email") ?: ""
+                    val firstName = document.getString("firstName") ?: ""
+                    val lastName = document.getString("lastName") ?: ""
+                    val balance = document.getDouble("balance") ?: 0.0
+
+                    // Actualizar el balance directamente en Firestore
+                    val newBalance = balance + amount
+                    userRef.update("balance", newBalance)
+                        .addOnSuccessListener {
+                            // Crear el objeto User con el nuevo balance
+                            val updatedUser = User(userId, email, firstName, lastName, newBalance)
+                            callback(updatedUser)
+                        }
+                        .addOnFailureListener {
+                            callback(null) // Manejar error de actualización
+                        }
+                } else {
+                    callback(null) // Documento no encontrado
+                }
+            }
+            .addOnFailureListener {
+                callback(null) // Manejar error al obtener el documento
+            }
+    }
+
+    fun send(userId: String, email: String, amount: Double, callback: (User?) -> Unit) {
+        val userRef = usersCollection.document(userId)
+
+        userRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val email = document.getString("email") ?: ""
+                    val firstName = document.getString("firstName") ?: ""
+                    val lastName = document.getString("lastName") ?: ""
+                    val balance = document.getDouble("balance") ?: 0.0
+
+                    // Actualizar el balance directamente en Firestore
+                    val newBalance = balance - amount
+                    userRef.update("balance", newBalance)
+                        .addOnSuccessListener {
+                            // Crear el objeto User con el nuevo balance
+                            val updatedUser = User(userId, email, firstName, lastName, newBalance)
+                            callback(updatedUser)
+                        }
+                        .addOnFailureListener {
+                            callback(null) // Manejar error de actualización
+                        }
+                } else {
+                    callback(null) // Documento no encontrado
+                }
+            }
+            .addOnFailureListener {
+                callback(null) // Manejar error al obtener el documento
             }
     }
 

@@ -2,6 +2,7 @@ package com.inc.eldartest.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.Serializable
 
 @Entity(
     tableName = "credit_cards"
@@ -13,4 +14,4 @@ data class Card(
     var cardNumber: String,
     val expiryDate: String,
     var cvv: String
-)
+): Serializable

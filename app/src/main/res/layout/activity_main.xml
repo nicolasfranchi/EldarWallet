@@ -63,6 +63,22 @@
                 android:textSize="36sp"
                 tools:text="$386.764,00" />
 
+            <Button
+                android:id="@+id/btnDeposit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="Deposit" />
+
+            <Button
+                android:id="@+id/btnSend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/btnDeposit"
+                android:layout_alignStart="@id/btnDeposit"
+                android:layout_alignParentEnd="true"
+                android:text="Send" />
+
         </RelativeLayout>
 
         <View
@@ -111,60 +127,37 @@
 
 
         <LinearLayout
-            android:baselineAligned="false"
-            android:elevation="4dp"
-            android:background="@color/eldar_blue"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/eldar_blue"
+            android:baselineAligned="false"
+            android:elevation="4dp"
             android:orientation="horizontal">
 
             <LinearLayout
                 android:id="@+id/btnPayWithQR"
-                android:background="@drawable/gradient"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/gradient"
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <ImageView
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_camscanner"
                     android:layout_width="36dp"
-                    android:layout_height="36dp"/>
+                    android:layout_height="36dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_camscanner" />
 
                 <TextView
-                    android:textColor="@color/white"
-                    android:textAlignment="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="Pay with QR code"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/btnPayWithCard"
-                android:background="@drawable/gradient"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <ImageView
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_credit_card"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"/>
-
-                <TextView
-                    android:textColor="@color/white"
                     android:textAlignment="center"
-                    android:text="Pay with credit card"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:textColor="@color/white" />
 
             </LinearLayout>
+
 
 
 
