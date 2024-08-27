@@ -35,10 +35,9 @@ Esta aplicación permite a los usuarios gestionar sus tarjetas, realizar pagos m
 ## Estructura del Proyecto
 
 - **`MainActivity`**: Pantalla principal que muestra el saldo y las tarjetas del usuario.
-- **`AddCardActivity`**: Permite al usuario agregar una nueva tarjeta de crédito.
-- **`PayActivity`**: Pantalla para realizar pagos mediante QR.
-- **`QRCodeViewModel`**: Maneja la lógica de negocios y la interacción con el repositorio para las operaciones de QR.
-- **`MainViewModel`**: Gestiona la carga y actualización de los datos de las tarjetas de crédito del usuario.
+- **`LoginActivity`**: Permite iniciar sesión o crear un nuevo usuario.
+- **`QrActivity`**: Pantalla para realizar pagos mediante QR.
+- **`NfcActivity`**: Pantalla para realizar pagos con tarjeta de crédito mediante NFC.
 
 ## Consideraciones Técnicas
 
