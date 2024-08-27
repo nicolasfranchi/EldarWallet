@@ -28,12 +28,7 @@ Esta aplicación permite a los usuarios gestionar sus tarjetas, realizar pagos m
    - Asegúrate de tener instalada la última versión de Android Studio.
    - Importa el proyecto y deja que Android Studio descargue todas las dependencias necesarias.
 
-3. **Configurar Firebase:**
-   - Ve a la consola de Firebase y crea un nuevo proyecto.
-   - Agrega la aplicación Android al proyecto de Firebase y sigue las instrucciones para agregar el archivo `google-services.json` a tu aplicación.
-   - Habilita Firebase Authentication y Firestore en la consola de Firebase.
-
-4. **Ejecutar la aplicación:**
+3. **Ejecutar la aplicación:**
    - Conecta un dispositivo Android o utiliza un emulador.
    - Ejecuta la aplicación desde Android Studio.
 
