@@ -14,7 +14,7 @@ Esta aplicación permite a los usuarios gestionar sus tarjetas, realizar pagos m
 - **Lenguaje:** Kotlin
 - **Arquitectura:** MVVM (Model-View-ViewModel)
 - **Autenticación:** Firebase Authentication
-- **Almacenamiento:** Firebase Firestore
+- **Almacenamiento:** Firebase Firestore y Room
 - **Interfaz de Usuario:** Material Design y componentes de Jetpack
 
 ## Configuración del Proyecto
